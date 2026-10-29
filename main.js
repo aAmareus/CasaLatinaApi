@@ -1,4 +1,5 @@
 import express from "express"
+import mongoose from "mongoose"
 import cors from "cors"
 import path from "path"
 import { fileURLToPath } from "url"
@@ -8,6 +9,7 @@ import roomRoutes from "./routes/rooms.routes.js"
 import reservasRoutes from "./routes/reserva.routes.js"
 import paymentsRoutes from "./routes/payments.routes.js"
 import poiRoutes from "./routes/poi.routes.js"
+import { timeStamp } from "console"
 
 
 const __filename = fileURLToPath(import.meta.url)
@@ -36,6 +38,16 @@ app.use(cors({
         "Authorization"
     ]
 }))
+
+// Health Route for check db
+app.get('/api/health', (req, res) => {
+    const dbState = mongoose.connection.readyState // if connected = 1
+    res.status(dbState === 1 ? 200 : 503).json({
+        status: dbState === 1 ? 'ok' : "db_disconnected",
+        uptime: process.uptime(),
+        timeStamp: new Date().toISOString(),
+    })
+})
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")))
 
