@@ -3,6 +3,7 @@ import Room from "../models/rooms.js"
 import fs from "fs"
 import path from "path"
 import { fileURLToPath } from "url"
+import { uploadImage, deleteImage, isCloudinaryUrl, getPublicIdFromUrl } from "../config/cloudinary.js"
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -245,7 +246,7 @@ export const uploadRoomImages = async (req, res) => {
             })      
         }
 
-        const currentImgs = room.images?.length === 0;
+        const currentImgs = room.images?.length || 0;
         const newImgs = req.files.length
 
         if(currentImgs + newImgs > 10){
@@ -261,11 +262,11 @@ export const uploadRoomImages = async (req, res) => {
             })
         }
 
-        const imagePaths = req.files.map(
-            file => `/uploads/rooms/${file.filename}`
+        const results = await Promise.all(
+            req.files.map(file => uploadImage(file.buffer, "casalatina/uploads"))
         )
 
-        room.images.push(...imagePaths)
+        room.images.push(...results.map(r => r.secure_url))
         await room.save()
 
         return res.status(200).json({
