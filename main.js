@@ -27,10 +27,6 @@ const allowedOrigins = [
     ...(process.env.CORS_ORIGINS?.split(",").map((o) => o.trim()).filter(Boolean) ?? [])
 ]
 
-app.use(cors())
-app.use(express.json())
-// app.use(express.json()) // enable when prod
-
 app.use(cors({
     origin: allowedOrigins,
     credentials: true,
