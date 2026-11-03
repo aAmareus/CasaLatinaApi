@@ -1,6 +1,7 @@
 import express from "express"
 import mongoose from "mongoose"
 import cors from "cors"
+import cookieParser from "cookie-parser"
 import path from "path"
 import { fileURLToPath } from "url"
 
@@ -17,16 +18,22 @@ const __dirname =path.dirname(__filename)
 
 const app = express()
 
+app.set("Trust proxy", 1)
+
+const allowedOrigins = [
+    "http://localhost:5173",
+    "https://casalatina-experience.com",
+    "https://www.casalatina-experience.com",
+    ...(process.env.CORS_ORIGINS?.split(",").map((o) => o.trim()).filter(Boolean) ?? [])
+]
+
 app.use(cors())
 app.use(express.json())
 // app.use(express.json()) // enable when prod
 
 app.use(cors({
-    origin: [
-        "http://localhost:5173",
-        "https://casalatina-experience.com",
-        "https://zxpfcpbp-8080.brs.devtunnels.ms"
-    ],
+    origin: allowedOrigins,
+    credentials: true,
     methods: [
         "GET",
         "POST",
@@ -38,6 +45,9 @@ app.use(cors({
         "Authorization"
     ]
 }))
+
+app.use(express.json())
+app.use(cookieParser())
 
 // Health Route for check db
 app.get('/api/health', (req, res) => {
