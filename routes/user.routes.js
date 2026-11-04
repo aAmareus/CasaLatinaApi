@@ -4,7 +4,7 @@ import { validate } from "../middlewares/validate.middleware.js"
 import { authMiddleware } from "../middlewares/auth.middleware.js"
 import { requireRole } from "../middlewares/role.middleware.js"
 import { validateUser, validateUpdateUser, validateLogin } from "../validators/user.validator.js"
-import { createUser, getUsers, getUserById, updateUser, deleteUser, loginUser, getProfile } from "../controllers/user.controller.js"
+import { createUser, getUsers, getUserById, updateUser, deleteUser, loginUser, logoutUser, getProfile } from "../controllers/user.controller.js"
 
 const router = Router()
 
@@ -12,6 +12,11 @@ router.post(
     "/login",
     validate(validateLogin),
     loginUser
+)
+
+router.post(
+    "/logout",
+    logoutUser
 )
 
 router.post(

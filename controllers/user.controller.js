@@ -3,6 +3,13 @@ import jwt from "jsonwebtoken"
 import mongoose from "mongoose"
 import User from "../models/user.js"
 
+const cookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/"
+}
+
 export const createUser = async (req, res) => {
     try {
         const {
@@ -250,23 +257,28 @@ export const deleteUser = async (req, res) => {
 
 export const loginUser = async (req, res) => {
     try {
-        const { email, password } = req.body
+        const { email, password } = req.body ?? {}
+
+        if(
+            typeof email !== "string" ||
+            typeof password !== "string" ||
+            !email.trim() ||
+            !password
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Correo y contraseña son obligatorios."
+            })
+        }
 
         const user = await User.findOne({
             email: email.toLowerCase().trim()
         })
 
-        if(!user){
+        if(!user || user.active === false){
             return res.status(401).json({
-                success: false,
-                message: "Email or password are invalid."
-            })
-        }
-
-        if(user.active === false){
-            return res.status(403).json({
                 succes: false,
-                message: "Account is disabled."
+                message: "Correo o contraseña son incorrectos."
             })
         }
 
@@ -278,15 +290,25 @@ export const loginUser = async (req, res) => {
         if(!validPassword){
             return res.status(401).json({
                 success: false,
-                message: "Emmail or password are invalid"
+                message: "Correo o contraseña incorrectos."
             })
         }
 
-        const token = jwt.sign({ userId: user._id, rol: user.rol },process.env.JWT_SECRET, { expiresIn: "1d" } )
+        const token = jwt.sign({ 
+            userId: user._id, 
+            rol: user.rol 
+        },
+        process.env.JWT_SECRET, 
+        { expiresIn: "1d" } )
+
+        res.cookie("cle_session", token, {
+            ...cookieOptions,
+            maxAge: 24 * 60 * 60 * 1000
+        })
 
         return res.status(200).json({
             success: true,
-            message: "Login successfuly",
+            message: "Inicio de sesión exitoso.",
             token,
             user: {
                 _id: user._id,
@@ -305,6 +327,15 @@ export const loginUser = async (req, res) => {
             message: "Internal sever error"
         })
     }
+}
+
+export const logoutUser = (req, res) => {
+    res.clearCookie("cle_session", cookieOptions)
+
+    return res.status(200).json({
+        success: true,
+        message: "Sesión cerrada exitosamente"
+    })
 }
 
 export const getProfile = async (req, res) => {

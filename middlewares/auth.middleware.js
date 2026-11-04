@@ -3,54 +3,57 @@ import User from "../models/user.js" // change to User inf error
 
 export const authMiddleware = async (req, res, next) => {
     try {
-        const authHeader = req.headers.authorization
+        const token = req.cookies?.cle_session 
 
-        if(!authHeader || !authHeader.startsWith("Bearer ")){
+        if(!token) {
             return res.status(401).json({
                 success: false,
-                message: "Auth Token required"
+                message: "Debes iniciar sesión."
             })
         }
 
-        const token = authHeader.substring(7).trim()
+        let decoded
 
-        if(!token){
+        try {
+            decoded = jwt.verify(
+                token,
+                process.env.JWT_SECRET
+            )
+        } catch(error) {
             return res.status(401).json({
                 success: false,
-                message: "Auth token required"
+                message: "Sesión inválida o expirada."
             })
         }
 
-        const decoded = jwt.verify(
-            token,
-            process.env.JWT_SECRET
-        )
+        const user = await User.findById(
+            decoded.userId
+        ).select("-password")
 
-        const user = await User.findById(decoded.userId).select("-password")
-
-        if(!user){
+        if(!user) {
             return res.status(401).json({
                 success: false,
-                message: "User not found"
+                message: "Usuario no encontrado."
             })
         }
 
-        if(user.active === false){
+        if(user.active === false) {
             return res.status(403).json({
                 success: false,
-                message: "Account was disabled"
+                message: "La cuenta está desactivada."
             })
         }
 
         req.user = user
 
         next()
-    } catch(e){
-        console.error("Auth error", e)
+
+    } catch(error) {
+        console.error("Auth error:", e)
 
         return res.status(500).json({
             success: false,
-            message: "Internal server error"
+            message: "Internal server Error."
         })
     }
 }
