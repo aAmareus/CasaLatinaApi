@@ -87,6 +87,14 @@ export const getPriceForNight = (room, date) => {
     const price = room[priceField]
 
     if(typeof price !== "number" || price < 0){
+        console.error("DEBUG precio inválido:", {
+            season, 
+            priceField,
+            price,
+            tipo: typeof price,
+            RoomFields: Object.keys(room.toObject())
+        })
+
         throw new Error(`Invalid price for: ${season}`)
     }
 
