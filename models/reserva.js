@@ -32,8 +32,7 @@ const reservaSchema = new Schema ({
 
     // While reserva === pendiente, block dates until is payed.
     hold_expires_at: {
-        type: Number,
-        required: true
+        type: Date
     },
 
     created: {
