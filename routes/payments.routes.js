@@ -27,7 +27,7 @@ router.get(
 )
 
 router.post(
-    "paypal/orders",
+    "/paypal/orders",
     paymentsLimiter,
     authMiddleware,
     validate(validatePaypalOrder),
