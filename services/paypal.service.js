@@ -14,10 +14,9 @@ export class PaypalError extends Error {
 }
 
 const getBaseUrl = () =>
-    ["live", "production".includes(process.env.PAYPAL_ENV)
+    ["live", "production"].includes(process.env.PAYPAL_ENV)
         ? "https://api-m.paypal.com"
         : "https://api-m.sandbox.paypal.com"
-    ]
  
 let tokenCache = { token: null, expiresAt: 0 }
 
@@ -37,7 +36,7 @@ const getAccessToken = async () => {
         `${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`
     ).toString("base64")
 
-    const response = await fetch(`${getBaseUrl()}/v1/oauth/token`, {
+    const response = await fetch(`${getBaseUrl()}/v1/oauth2/token`, {
         method: "POST",
         headers: {
             Authorization: `Basic ${credentials}`,
