@@ -11,10 +11,18 @@ const paymentSchema = new Schema({
         enum: ['paypal', 'stripe', 'mercadopago'],
         required: true
     },
+
+    // ID de la orden en el proveedor
     external_payment_id: {
         type: String,
         required: true
     },
+
+    // ID de la captura (cobro real)
+    capture_id: {
+        type: String
+    },
+
     amount: {
         type: Number,
         required: true,
@@ -24,6 +32,22 @@ const paymentSchema = new Schema({
         type: String,
         required: true
     },
+
+    // Como se llegó al monto. Para explicar
+    amount_brl: {
+        type: Number,
+        min: 0
+    },
+
+    exchange_rate: {
+        type: Number,
+        min: 0
+    },
+
+    exchange_rate_date: {
+        type: String
+    },
+
     status: {
         type: String,
         required: true,
