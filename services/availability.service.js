@@ -45,13 +45,13 @@ export const checkAvailability = async (
         }
     }
 
-    const listing = await ExternalListing.find({
+    const listings = await ExternalListing.find({
         room_ids: roomId,
         active: true
     }).select("_id")
 
     
-    const listingIds = listing.map(
+    const listingIds = listings.map(
         listing => listing._id
     )
 
