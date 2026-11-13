@@ -1,4 +1,4 @@
-import mongoose, { model } from "mongoose"
+import mongoose, { Schema, model } from "mongoose"
 
 const externalBookingSchema = new Schema({
     

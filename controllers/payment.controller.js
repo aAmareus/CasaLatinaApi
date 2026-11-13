@@ -11,7 +11,7 @@ import {
 import {
     isHoldExpired,
     getPaymentHoldExpiry
-} from "../services/reservationHold.service.js"
+} from "../services/reservationhold.service.js"
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
@@ -71,7 +71,7 @@ const buildReservationInfo = (reserva) => ({
 
 
 
-export const getCheckoutSumary = async (req,res) => {
+export const getCheckoutSummary = async (req,res) => {
     try{ 
         const { reserva, error } = await loadOwnedReserva(
             req.params.reservationId, 
@@ -135,7 +135,7 @@ export const getCheckoutSumary = async (req,res) => {
 }
 
 
-export const createPaypalOrderHandler = async (req, res) => {
+export const createPayPalOrderHandler = async (req, res) => {
     try {
         const { reserva, error } = await loadOwnedReserva(
             req.body.reservation_id,
@@ -199,7 +199,7 @@ export const createPaypalOrderHandler = async (req, res) => {
     }
 }
 
-export const capturePaypalOrderHandler = async (req, res) => {
+export const capturePayPalOrderHandler = async (req, res) => {
     try {
         const { orderId } = req.params
 

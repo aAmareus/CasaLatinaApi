@@ -18,5 +18,5 @@ export const isHoldExpired = (reserva) =>
 export const blockingReservaFilter = () => [
     { estado: "confirmada" },
     { estado: "pendiente", hold_expires_at: { $gt: new Date() } },
-    { estado: "pendiente", hold_expires_at: {$exists: false } }
+    { estado: "pendiente", hold_expires_at: { $exists: false } }
 ]

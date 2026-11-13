@@ -104,5 +104,5 @@ export const getBrlToUsd = async () => {
     }
 }
 
-export const convertBrltoUsd = (amountBrl, rate) => 
+export const convertBrlToUsd = (amountBrl, rate) => 
     Math.round(amountBrl * rate * 100) / 100
