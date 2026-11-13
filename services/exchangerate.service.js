@@ -13,8 +13,8 @@ const PROVIDERS = [
         })
     },
     {
-        name: "frankfurt.dev",
-        url: "https://api.frankfurter.dev/v1/latest?base?BRL&symbols=USD",
+        name: "frankfurter.dev",
+        url: "https://api.frankfurter.dev/v1/latest?base=BRL&symbols=USD",
         parse: (data) => ({
             rate: data?.rates?.USD,
             date: data?.date ?? null
@@ -28,7 +28,7 @@ const isSaneRate = (rate) =>
     typeof rate === "number" && Number.isFinite(rate) && rate > 0.02 && rate < 1
 
 const fetchFromProviders = async () => {
-    for (const provider in PROVIDERS) {
+    for (const provider of PROVIDERS) {
         try {
             const response = await fetch(provider.url, {
                 signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS)
