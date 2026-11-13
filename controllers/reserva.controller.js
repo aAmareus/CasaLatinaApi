@@ -30,7 +30,7 @@ export const createReserva = async (req, res) => {
 
         const { checkIn, checkOut } = datesValidation
 
-        if(!mongoose.isValodObject(room_id)) {
+        if(!mongoose.isValidObject(room_id)) {
             return res.status(400).json({
                 success: false,
                 message: "Invalid room ID"
