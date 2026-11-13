@@ -92,7 +92,7 @@ export const getPriceForNight = (room, date) => {
             priceField,
             price,
             tipo: typeof price,
-            RoomFields: Object.keys(room.toObject())
+            RoomFields: Object.keys(room.toObject() ?? room)
         })
 
         throw new Error(`Invalid price for: ${season}`)
