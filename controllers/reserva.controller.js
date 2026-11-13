@@ -84,7 +84,7 @@ export const createReserva = async (req, res) => {
         }
 
         const quote = calculateReservationPrice(
-            room_id,
+            room,
             check_in,
             check_out
         )
