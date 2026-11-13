@@ -115,7 +115,7 @@ export const getCheckoutSummary = async (req,res) => {
         }
 
         const fx = await getBrlToUsd()
-        const total_usd = covertBrlToUsd(reserva.total_price, fx.rate)
+        const total_usd = convertBrlToUsd(reserva.total_price, fx.rate)
 
         return res.status(200).json({
             succes: true,
