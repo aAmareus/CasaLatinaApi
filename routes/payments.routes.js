@@ -21,7 +21,7 @@ const paymentsLimiter = rateLimit({
 })
 
 router.get(
-    "/checkout:reservationId",
+    "/checkout/:reservationId",
     authMiddleware,
     getCheckoutSummary
 )
