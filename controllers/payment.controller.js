@@ -135,7 +135,7 @@ export const getCheckoutSumary = async (req,res) => {
 }
 
 
-export const createPaypalOrder = async (req, res) => {
+export const createPaypalOrderHandler = async (req, res) => {
     try {
         const { reserva, error } = await loadOwnedReserva(
             req.body.reservation_id,
