@@ -89,8 +89,9 @@ export const getCheckoutSummary = async (req,res) => {
             }).sort({ created_at: -1 })
 
             return res.status(200).json({
-                succes: true,
+                success: true,
                 checkout: {
+                    reservation,
                     pricing: payment
                     ? buildPricing({
                         total_brl: payment.amount_brl ?? reserva.total_price,
@@ -109,8 +110,8 @@ export const getCheckoutSummary = async (req,res) => {
 
         if (reserva.estado === "cancelada") {
             return res.status(200).json({
-                succes: true,
-                checkout: { reservation,pricing: null }
+                success: true,
+                checkout: { reservation, pricing: null }
             })
         }
 
@@ -118,7 +119,7 @@ export const getCheckoutSummary = async (req,res) => {
         const total_usd = convertBrlToUsd(reserva.total_price, fx.rate)
 
         return res.status(200).json({
-            succes: true,
+            success: true,
             checkout: {
                 reservation,
                 pricing: buildPricing({
