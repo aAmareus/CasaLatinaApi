@@ -260,7 +260,7 @@ href
                     ${iconLink(cfg.instagram, `${cfg.assetsUrl}/instagram-icon.png`, "Instagram")}${iconLink(cfg.siteUrl, `${cfg.assetsUrl}/web-icon.png`, "Sitio web")}${iconLink(cfg.whatsapp, `${cfg.assetsUrl}/whatsapp-icon.png`, "WhatsApp")}${iconLink(mailHref, `${cfg.assetsUrl}/envelope-icon.png`, "Correo")}
                   </td>
                   <td width="130" align="right" valign="bottom">
-                    <img src="${esc(cfg.assetsUrl)}/Logotipo-wobg.png" alt="Casa Latina Brasil Experience" width="120" style="display:block;width:120px;height:auto;border:0;">
+                    <img src="${esc(cfg.assetsUrl)}/logotipo-wobg.png" alt="Casa Latina Brasil Experience" width="120" style="display:block;width:120px;height:auto;border:0;">
                   </td>
                 </tr>
               </table>
