@@ -2,25 +2,18 @@ import mongoose from "mongoose"
 import Reserva from "../models/reserva.js"
 import Payment from "../models/payments.js"
 import { getBrlToUsd, convertBrlToUsd } from "../services/exchangerate.service.js"
-import {
-    createPaypalOrder,
-    capturePaypalOrder, 
-    getPaypalOrder,
-    PaypalError
-} from "../services/paypal.service.js"
-import {
-    isHoldExpired,
-    getPaymentHoldExpiry
-} from "../services/reservationhold.service.js"
+import { createPaypalOrder, capturePaypalOrder, getPaypalOrder, PaypalError } from "../services/paypal.service.js"
+import { isHoldExpired, getPaymentHoldExpiry } from "../services/reservationhold.service.js"
+import { notifyPaymentConfirmed } from "../services/reservationEmail.service.js"
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
 const fail =(res, status, message, extra = {}) =>
-    res.status(status).json ({ succes: false, message, ...extra })
+    res.status(status).json ({ success: false, message, ...extra })
 
 
 
-const loadOwnedReserva = async (reservationId, user) => {
+const loadOwnedReserva = async (reservationId, user, { autoExpire = true } = {}) => {
     if (!mongoose.isValidObjectId(reservationId)) {
         return { error: { status: 400, message: "ID de reserva inválido"} } 
     }
@@ -38,7 +31,7 @@ const loadOwnedReserva = async (reservationId, user) => {
         return { error: { status: 403, message: "No tienes permiso sobre esta reserva" } }
     }
 
-    if (isHoldExpired(reserva)) {
+    if (autoExpire && isHoldExpired(reserva)) {
         reserva.estado = "cancelada"
         await reserva.save()
     }
@@ -53,7 +46,7 @@ const buildPricing = ({ total_brl, total_usd, fx }) => ({
     exchange_rate: fx.rate,
     margin_pct: fx.margin_pct,
     rate_date: fx.date,
-    rate_source: fx.rate_source
+    rate_source: fx.rate_source ?? fx.source
 })
 
 const buildReservationInfo = (reserva) => ({
@@ -61,7 +54,7 @@ const buildReservationInfo = (reserva) => ({
     estado: reserva.estado,
     check_in: reserva.check_in, 
     check_out: reserva.check_out,
-    nights: Math.round((reserva.check_out-reserva.check_in)/DAY_MS),
+    nights: Math.round((reserva.check_out - reserva.check_in)/DAY_MS),
     hold_expires_at: reserva.hold_expires_at ?? null,
     room: {
         name: reserva.room_id?.name ?? "habitación",
@@ -175,7 +168,7 @@ export const createPayPalOrderHandler = async (req, res) => {
             status: "pending",
             amount_brl: reserva.total_price,
             exchange_rate: fx.rate,
-            exchange_rate_date: fx.rate
+            exchange_rate_date: fx.date
         })
 
         // While user pays, dont lose dates
@@ -183,6 +176,7 @@ export const createPayPalOrderHandler = async (req, res) => {
 
         if(!reserva.hold_expires_at || reserva.hold_expires_at < extendedHold) {
             reserva.hold_expires_at = extendedHold
+            await reserva.save()
         }
 
         return res.status(201).json({
@@ -205,7 +199,7 @@ export const capturePayPalOrderHandler = async (req, res) => {
         const { orderId } = req.params
 
         if(!/^[A-Za-z0-9_-]{8,64}$/.test(orderId)) {
-            return fail(res, 400, "ID de onrden inválido")
+            return fail(res, 400, "ID de orden inválido")
         }
 
         const payment = await Payment.findOne({
@@ -217,16 +211,25 @@ export const capturePayPalOrderHandler = async (req, res) => {
 
         const { reserva, error } = await loadOwnedReserva(
             payment.reservation_id,
-            req.user
+            req.user,
+            { autoExpire: payment.status !== "completed"}
         )
 
         if(error) return fail(res, error.status, error.message)
 
         if(payment.status === "completed") {
+            if(reserva.estado === "pendiente") {
+                reserva.estado = "confirmada"
+                reserva.hold_expires_at = undefined
+                await reserva.save()
+            }
+
+            void notifyPaymentConfirmed(payment._id)
+
             return res.status(200).json({
                 success: true,
                 already_captured: true,
-                reservation: {id: reserva._id, estado: reserva.estado }
+                reservation: { id: reserva._id, estado: reserva.estado }
             })
         }
 
@@ -258,7 +261,7 @@ export const capturePayPalOrderHandler = async (req, res) => {
         const capture = result?.purchase_units?.[0]?.payments?.captures?.[0]
 
         if(!capture) {
-            console.error("Respuesta de captura sin datos:", JSON.stringify.apply(result))
+            console.error("Respuesta de captura sin datos:", JSON.stringify(result))
             return fail(res, 502, "Paypal no devolvió datos del pago")
         }
 
@@ -286,11 +289,14 @@ export const capturePayPalOrderHandler = async (req, res) => {
 
         payment.status = "completed"
         payment.capture_id = capture.id
+        payment.paid_at = new Date()
         await payment.save()
 
         reserva.estado = "confirmada"
         reserva.hold_expires_at = undefined
         await reserva.save()
+
+        void notifyPaymentConfirmed(payment._id)
 
         return res.status(200).json({
             success: true,
