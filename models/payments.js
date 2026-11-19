@@ -28,6 +28,7 @@ const paymentSchema = new Schema({
         required: true,
         min: 0
     },
+
     currency: {
         type: String,
         required: true
@@ -46,6 +47,16 @@ const paymentSchema = new Schema({
 
     exchange_rate_date: {
         type: String
+    },
+
+    // cuando paypal confirma el pago
+    paid_at: {
+        type: Date
+    },
+
+    // cuando se envía el correo
+    email_sent_at: {
+        type: Date
     },
 
     status: {
