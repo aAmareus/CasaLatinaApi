@@ -29,7 +29,7 @@ export const sendEmail = async ({
         to,
         subject,
         html,
-        ...Resend(replyTo ? { replyTo } : {})
+        ...(replyTo ? { replyTo } : {})
     })
 
     if(error) {
